@@ -1,0 +1,32 @@
+<html>
+<head> <title>  </title>
+
+<style>
+    body{
+/*background-color:#5200ff; */
+color: #5200ff; 
+        text-align:center; 
+        font-size:28px;
+        margin-top:10%; 
+        font-family:helvetica;
+}
+    </style>
+</head>
+
+<body>
+<%   for (var i = 0; i < thedata.length; i++) {  %>
+<%   var num =  thedata.length; %>
+
+<a href="/one?_id=<%= thedata[i]._id %>">
+<%= thedata[i].submission  %> </a> <br>
+<%  }   %>
+
+<p> total: &nbsp <%=num%> </p>
+
+    
+ <form method="GET" action="/search">
+<input type='text' name="search"><input type="submit" name="submit" value="Search">
+</form>
+
+</body>
+</html>

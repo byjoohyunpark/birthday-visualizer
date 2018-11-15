@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Birthday Visualizer</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
+
+    <style>
+        body {
+            font-family: Monospace;
+        }
+                
+        @media only screen and (max-height: 500px) {
+            #caption {
+                font-size: 0px;
+            }
+}
+
+        #input {
+            position: absolute;
+            bottom: 60px;
+            left: 3%;
+            text-align: left;
+        }
+
+        label {
+            font-size: 14px;
+            color: black;
+        }
+
+        #name {
+            margin-bottom: 12px;
+        }
+
+        .info {
+            position: absolute;
+            opacity: 0.9;
+            color: black;
+            text-align: center;
+            top: 10px;
+            width: 100%;
+        }
+
+        .info a {
+            color: #5200ff;
+        }
+
+        #target {
+            position: absolute;
+            left: 3%;
+            bottom: 280px;
+            font-size: 22px;
+        }
+
+
+        #total {
+            position: absolute;
+             left: 3%;
+            bottom: 180px;
+        }
+
+        #caption {
+            font-size: 16px;
+            position: absolute;
+            left: 3%;
+            top: 60px;
+        }
+
+        #guide {
+            position: absolute;
+            right: 3%;
+            bottom: 40px;
+        }
+
+    </style>
+</head>
+
+
+<body>
+    <script src="build/three.js"></script>
+    <script src="js/controls/TrackballControls.js"></script>
+    <script src="js/Detector.js"></script>
+    <script src="js/libs/stats.min.js"></script>
+
+   
+   <div class="wrapper">
+   
+    <div class="info">
+        Birthday Visualizer by <a href="https://www.parkjoohyun.com/" target="_blank" rel="noopener">Joohyun Park</a>
+    </div>
+
+    <div id="target">
+        <div id="msg"></div>
+        <div id="date"></div>
+    </div>
+
+              <div id="total"> </div>
+
+    <div id="input">
+        <label>Name </label> <br>
+        <input class="form" id="name" type="text" name="name" size="18" /> <br>
+        <div id="coordinate">
+            <label>Date of birth</label> <br>
+            <input class="form" id="X" type="text" name="X" size="3" placeholder="MM" />
+            <input class="form" id="Y" type="text" name="Y" size="3" placeholder="DD" />
+            <input class="form" id="Z" type="text" name="Z" size="5" placeholder="YYYY" />
+            <input id="submit" type="button" name="submitButton" value="Submit" />
+
+        </div>
+    </div>
+
+    <div id="container"></div>
+    <div id="caption"> Where <br> is <br> your <br> birthday? </div>
+    <!--        <div id="direction">  <div id="mouse">Mouse control <br></div>  <div id="detail"> Left&nbsp&nbsp : Rotate <br> Right&nbsp : Pan <br> Scroll : Zoom</div></div> -->
+<div id="guide">
+    <img src="guide.png" alt="" width="100">
+</div>
+
+</div>
+    <script>
+        if (!Detector.webgl) Detector.addGetWebGLMessage();
+        var container, stats;
+        var camera, controls, scene, renderer, geometry;
+        var cross;
+        var posX, posY, posZ;
+        var object = [];
+        var theData = [];
+        var name;
+        //
+        var mouse = new THREE.Vector2();
+        var raycaster = new THREE.Raycaster();;
+
+
+        $(document).ready(function() {
+
+
+            $.ajax({
+                url: '/show',
+                dataType: 'json',
+                success: function(data) {
+                    //                    console.log(data);
+                    theData = data;
+                    init();
+                    animate();
+                },
+                error: function() {
+                    alert("error");
+                }
+            });
+
+
+            $('#submit').click(
+                function() {
+                    // add new ball to three js portion                    
+                    $.ajax({
+                        url: "/formpost?name=" + $('#name').val() + "&X=" + $('#X').val() + "&Y=" + $('#Y').val() + "&Z=" + $('#Z').val(),
+                        dataType: 'json',
+                        success: function(data) {
+                            //                            console.log(data);
+                            theData = data;
+
+                            var mesh = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({
+                                color: Math.random() * 0xffffff,
+                                flatShading: true
+                            }));
+
+                            posX = (theData[theData.length - 1].X) * 10;
+                            posY = (theData[theData.length - 1].Y) * 10;
+                            posZ = (theData[theData.length - 1].Z - 1900) * 10;
+                            name = (theData[theData.length - 1].name);
+
+                            document.getElementById("total").innerHTML = "Total: " + theData.length;
+
+                            mesh.position.x = posX;
+                            mesh.position.y = posY;
+                            mesh.position.z = posZ;
+                            mesh.name = name;
+                            mesh.updateMatrix();
+                            mesh.matrixAutoUpdate = false;
+                            scene.add(mesh);
+                            object.push(mesh);
+
+
+                        },
+                        error: function() {
+                            alert("error");
+                        }
+                    });
+                    // reset input value
+                    $(".form").val('');
+
+                });
+
+            // enter key to submit
+            $(".form").keypress(function(e) {
+                if (e.which == 13) {
+                    $("#submit").trigger('click');
+                }
+            });
+        });
+
+        //                init();
+        //                animate();
+
+        function init() {
+
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 12000);
+            camera.position.x = 60;
+            camera.position.y = 190;
+            camera.position.z = 1000;
+
+            var vectorCamera = new THREE.Vector3(0, 1, 0);
+            camera.getWorldDirection(vectorCamera);
+
+
+            // world
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xffffff);
+            //            scene.fog = new THREE.FogExp2(0xcccccc, 0.0002);
+            geometry = new THREE.SphereGeometry(2, 32, 16);
+
+
+            for (var i = 0; i < theData.length; i++) {
+
+                var mesh = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({
+                    color: Math.random() * 0xffffff,
+                    flatShading: true
+                }));
+                //console.log(theData[i].X);
+                //console.log(theData[i].Y);
+                //console.log(theData[i].Z);
+
+                posX = (theData[i].X) * 10;
+                posY = (theData[i].Y) * 10;
+                posZ = (theData[i].Z - 1900) * 10;
+
+                //                posX = (theData[i].X) * 100 ;
+                //                posY = (theData[i].Y) * 100 ;
+                //                posZ = (theData[i].Z - 1900) * 100 ;
+                name = (theData[i].name);
+
+                document.getElementById("total").innerHTML = "Total: " + theData.length;
+
+                mesh.position.x = posX;
+                mesh.position.y = posY;
+                mesh.position.z = posZ;
+                mesh.name = name;
+                mesh.updateMatrix();
+                mesh.matrixAutoUpdate = false;
+                scene.add(mesh);
+                object.push(mesh);
+
+            }
+
+
+            // lights
+            var light = new THREE.DirectionalLight(0xffffff, 1.2);
+            light.position.set(1, 1, 1);
+            scene.add(light);
+            var light = new THREE.DirectionalLight(0xffffff, 1.0);
+            light.position.set(-1, -1, -1);
+            scene.add(light);
+            var light = new THREE.DirectionalLight(0x5200ff, 0.5);
+            light.position.set(-1, 1, 1);
+            scene.add(light);
+            var light = new THREE.DirectionalLight(0xff00ff, 0.3);
+            light.position.set(1, -1, -1);
+            scene.add(light);
+            var light = new THREE.AmbientLight(0x222222, 0.2);
+            scene.add(light);
+
+
+            // renderer
+            renderer = new THREE.WebGLRenderer({
+                antialias: false
+            });
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            container = document.getElementById('container');
+            container.appendChild(renderer.domElement);
+            //            stats = new Stats();
+            //            container.appendChild(stats.dom);
+
+
+            // control
+            controls = new THREE.TrackballControls(camera, container);
+
+            controls.rotateSpeed = 1.0 / 1.7;
+            controls.zoomSpeed = 1.2 / 4.0;
+            controls.panSpeed = 0.8 / 1.7;
+
+            controls.noZoom = false;
+            controls.noPan = false;
+            controls.staticMoving = true;
+            controls.dynamicDampingFactor = 0.3;
+            controls.keys = [65, 83, 68];
+            controls.addEventListener('change', render);
+
+            //
+            window.addEventListener('resize', onWindowResize, false);
+            //
+            render();
+
+            document.addEventListener('mousemove', onDocumentMouseMove, false);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            controls.handleResize();
+            render();
+        }
+
+        function animate() {
+            //                 console.log(camera.position);
+            requestAnimationFrame(animate);
+            controls.update();
+            findIntersections();
+        }
+
+
+        function render() {
+            renderer.render(scene, camera);
+            //            stats.update();
+        }
+
+
+
+        function onDocumentMouseMove(event) {
+            event.preventDefault();
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+        }
+
+
+        function findIntersections() {
+            raycaster.setFromCamera(mouse, camera);
+            var intersections = raycaster.intersectObjects(object);
+            if (intersections.length > 0) {
+                if (intersection != intersections[0].object) {
+                    var intersection = intersections[0].object;
+                    msg.innerHTML = intersection.name;
+                    date.innerHTML = intersection.position.x / 10 + '/' + intersection.position.y / 10 + '/' + (intersection.position.z / 10 + 1900);
+
+                    var intersectionExtra = [];
+                    for (i = 1; i < intersections.length; i++) {
+
+                        if (intersections[0].object.position.x == intersections[i].object.position.x && intersections[0].object.position.y == intersections[i].object.position.y && intersections[0].object.position.z == intersections[i].object.position.z) {
+                            var node = document.createElement("div");
+                            var extra = document.createTextNode(intersections[i].object.name);
+                            node.appendChild(extra);
+                            document.getElementById("msg").appendChild(node);
+                        }
+                    }
+                }
+            } else {
+                intersection = null;
+                msg.innerHTML = ' ';
+                date.innerHTML = '';
+            }
+        }
+
+    </script>
+</body>
+
+</html>

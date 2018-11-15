@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
+    <script src="server.js">
+
+
+    </script>
+    
+    <script>
+//        $(document).ready(function() {
+//            $("#submit").click(function() {
+//                $.get('display.ejs', function(response) {
+//            $('#content').html(reponse);
+//                });
+//            });
+//        });
+//
+    </script>
+
+    <style>
+        body {
+            font-family: helvetica;
+            /*        font-size: 16px;*/
+        }
+
+        #input {
+            position: absolute;
+            bottom: 50px;
+            left: 40px;
+            /*    scale(1.2);*/
+        }
+
+        h1 {
+            color: #5200ff;
+            text-align: left;
+            font-size: 20px;
+        }
+
+        label {
+            font-size: 14px;
+            color: #5200ff;
+        }
+
+        #search {
+            text-align: left;
+        }
+
+        #name {
+            margin-bottom: 5px;
+        }
+
+    </style>
+</head>
+
+
+<body>
+
+    <form method="GET" action="/formpost2">
+        <div id="input">
+            <!--     <h1>position</h1>-->
+
+            <div id="search">
+                <label>Name </label> <br>
+                <input id="name" type="text" name="name" size="23" /> <br>
+                <div id="coordinate">
+                    <label>x:</label>
+                    <input type="text" name="X" size="3" />
+                    <label>y:</label>
+                    <input type="text" name="Y" size="3" />
+                    <label>z:</label>
+                    <input type="text" name="Z" size="3" />
+                    <input id="submit" type="submit" name="submitButton" value="Submit" />
+                </div>
+            </div>
+        </div>
+    </form>
+
+   <% include('display.ejs') %>
+
+    <div id="content">
+     <script>
+      for (var i = 0; i < thedata.length; i++) {  
+   var num =  thedata.length; 
+
+<a href="/one?_id=<%= thedata[i]._id %>">
+<%= thedata[i].submission  %> </a> <br>
+<%  }   %>
+
+<p> total: &nbsp <%=num%> </p>
+
+</script>
+    </div>
+
+
+
+</body>
+
+</html>
