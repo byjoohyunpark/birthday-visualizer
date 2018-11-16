@@ -18,7 +18,7 @@ npm install mongojs --save
 ```
 
 
-Create ```config.js``` file and fill your information. This will connect your MongoDB space with the node.
+Create ```config.js``` file and fill your information by following script. This will connect your MongoDB space with the node.
 
 
 ```
