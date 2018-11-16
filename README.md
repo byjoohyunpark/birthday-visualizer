@@ -6,7 +6,7 @@ This data visualization project is a personal experiment on building single page
 [View project](https://birthday-visualizer.glitch.me/)
 
 
-### Set up
+## Set up
 Clone this repository, cd to your folder and install following packages. Also You have to set up [MongoDB](https://www.mongodb.com/) environment for storing data. Then ideally you should be able to run this locally. 
 
 
