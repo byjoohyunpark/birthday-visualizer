@@ -1,7 +1,5 @@
 # Birthday Visualizer
-This data visualization project is a personal experiment on building single page applications (SPAs). You can preview the project [here](https://birthday-visualizer.glitch.me/).
-* Back-end : Node, Express.js, MongoDB 
-* front-end : HTML/CSS, jQuery, Ajax, Three.js
+This data visualization project is a personal experiment on building single page applications (SPAs) with Node, Express.js, MongoDB, Ajax for back-end and Three.js for front-end. You can preview the project [here](https://birthday-visualizer.glitch.me/).
 
 
 
