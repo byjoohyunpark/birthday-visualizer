@@ -10,8 +10,6 @@ Clone this repository, cd to your folder and install following packages. Also Yo
 
 ```
 npm install express --save
-```
-```
 npm install mongojs --save
 ```
 
